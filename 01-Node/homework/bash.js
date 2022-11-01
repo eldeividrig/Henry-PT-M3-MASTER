@@ -1,15 +1,18 @@
 const commands = require('./commands')
+
+const print = function(output){  
+  process.stdout.write(output);
+  process.stdout.write('\nprompt > ');
+}
 // Output un prompt
 process.stdout.write('prompt > ');
 // El evento stdin 'data' se dispara cuando el user escribe una línea
 process.stdin.on('data', function (data) {
-  var cmd = data.toString().trim(); // remueve la nueva línea
-  if (cmd === 'date') {
-    process.stdout.write(Date());
+  let args = data.toString().trim().split(" ")
+  var cmd = args.shift();
+  if (commands[cmd]) {
+    commands[cmd](args, print);
+  }else{
+    print('cmd not found');
   }
-  if (cmd === 'pwd') {
-    process.stdout.write(process.cwd());
-  }
-  //process.stdout.write('You typed: ' + cmd);
-  process.stdout.write('\nprompt > ');
 });
