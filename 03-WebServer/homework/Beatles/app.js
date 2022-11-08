@@ -25,6 +25,8 @@ var beatles = [{
 
 http
   .createServer((req, res) => {
-
+    if (req.url === '/api') {
+      
+    }
   })
   .listen(3000, '127.0.0.1');
