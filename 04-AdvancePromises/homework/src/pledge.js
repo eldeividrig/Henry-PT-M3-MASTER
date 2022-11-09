@@ -30,8 +30,10 @@ $Promise.prototype._internalReject = function(value){
 $Promise.prototype.then = function(successCb, errorCb){
   if(typeof successCb !== 'function') successCb = false;
   if(typeof errorCb !== 'function') errorCb = false;
-  this._handlerGroups.push({successCb, errorCb});
+  const downstreamPromise = new $Promise(function(){});
+  this._handlerGroups.push({successCb, errorCb, downstreamPromise});
   if(this._state !== 'pending') this._callHandlers();
+  return downstreamPromise;
 };
 
 $Promise.prototype._callHandlers = function(){
@@ -39,10 +41,14 @@ $Promise.prototype._callHandlers = function(){
     let current =  this._handlerGroups.shift();
     if(this._state === 'fulfilled'){
       current.successCb && current.successCb(this._value);
-    }else if( this._state === 'rehected'){
+    }else if( this._state === 'rejected'){
       current.errorCb && current.errorCb(this._value);
     }
   }
+}
+
+$Promise.prototype.catch = function(errorCb){
+  return this.then(null, errorCb);
 }
 
 
