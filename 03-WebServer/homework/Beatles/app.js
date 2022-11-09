@@ -28,18 +28,20 @@ http
     if (req.url === '/api') {
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify(beatles));
-    }
-    if (req.url.substring(0, 5) === '/api/' && req.url.length > 5) {
-      let findBeatle = req.url.split('/').pop();
-      let foundBeatle = beatles.find((beatle) => encodeURI(beatle.name) === findBeatle);
-      if (foundBeatle) {
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify(foundBeatle));
-      } else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' })
-        res.end("No existe ese Beatle");
+    } else {
+      if (req.url.substring(0, 5) === '/api/' && req.url.length > 5) {
+        let findBeatle = req.url.split('/').pop();
+        let foundBeatle = beatles.find((beatle) => encodeURI(beatle.name) === findBeatle);
+        if (foundBeatle) {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(foundBeatle));
+        } else {
+          res.writeHead(404, { 'Content-Type': 'text/plain' })
+          res.end("No existe ese Beatle");
+        }
       }
     }
+
     if (req.url === '/') {
       res.writeHead(200, { 'Content-Type': 'text/html' })
       const index = fs.readFileSync(`${__dirname}/index.html`, 'utf-8')
