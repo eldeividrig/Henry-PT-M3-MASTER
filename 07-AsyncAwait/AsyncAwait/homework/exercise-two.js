@@ -1,15 +1,15 @@
 'use strict';
 
 var Promise = require('bluebird'),
-    async = require('async'),
-    exerciseUtils = require('./utils');
+  async = require('async'),
+  exerciseUtils = require('./utils');
 
 var readFile = exerciseUtils.readFile,
-    promisifiedReadFile = exerciseUtils.promisifiedReadFile,
-    blue = exerciseUtils.blue,
-    magenta = exerciseUtils.magenta;
+  promisifiedReadFile = exerciseUtils.promisifiedReadFile,
+  blue = exerciseUtils.blue,
+  magenta = exerciseUtils.magenta;
 
-var args = process.argv.slice(2).map(function(st){ return st.toUpperCase(); });
+var args = process.argv.slice(2).map(function (st) { return st.toUpperCase(); });
 
 module.exports = {
   problemA: problemA,
@@ -20,12 +20,12 @@ module.exports = {
 
 
 // corre cada problema dado como un argumento del command-line para procesar
-args.forEach(function(arg){
+args.forEach(function (arg) {
   var problem = module.exports['problem' + arg];
   if (problem) problem();
 });
 
-function problemA () {
+async function problemA() {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
    *
    * A. loggea el poema dos stanza uno y stanza dos en cualquier orden
@@ -36,24 +36,28 @@ function problemA () {
    */
 
   // callback version
-  async.each(['poem-two/stanza-01.txt', 'poem-two/stanza-02.txt'],
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- A. callback version --');
-        blue(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- A. callback version done --');
-    }
-  );
+  // async.each(['poem-two/stanza-01.txt', 'poem-two/stanza-02.txt'],
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- A. callback version --');
+  //       blue(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- A. callback version done --');
+  //   }
+  // );
 
   // AsyncAwait version
-
+  async function readFileAsync(filename) {
+    blue(await promisifiedReadFile(filename))
+  }
+  await Promise.all([readFileAsync('poem-two/stanza-01.txt'), readFileAsync('poem-two/stanza-02.txt')])
+  console.log('done');
 }
 
-function problemB () {
+async function problemB() {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
    *
    * B. loggea todas las stanzas en poema dos, en cualquier orden y loggea
@@ -68,24 +72,31 @@ function problemB () {
   });
 
   // callback version
-  async.each(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- B. callback version --');
-        blue(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- B. callback version done --');
-    }
-  );
+  // async.each(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- B. callback version --');
+  //       blue(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- B. callback version done --');
+  //   }
+  // );
 
   // AsyncAwait version
+  async function readFileAsync(filename) {
+    blue(await promisifiedReadFile(filename))
+  }
 
+  const arrayPromises = filenames.map(fn => readFileAsync(fn))
+
+  await Promise.all(arrayPromises);
+  console.log('done');
 }
 
-function problemC () {
+async function problemC() {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
    *
    * C. Lee y loggea todas las stanzas en el poema dos, *en orden* y
@@ -101,26 +112,33 @@ function problemC () {
   });
 
   // callback version
-  async.eachSeries(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- C. callback version --');
-        blue(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- C. callback version done --');
-    }
-  );
+  // async.eachSeries(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- C. callback version --');
+  //       blue(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- C. callback version done --');
+  //   }
+  // );
 
   // AsyncAwait version
+  async function readFileAsync(filename) {
+    blue(await promisifiedReadFile(filename))
+  }
 
+  for (let i = 0; i < filenames.length; i++) {
+    await readFileAsync(filenames[i]);
+  }
+  console.log('done');
 }
 
-function problemD () {
+async function problemD() {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   *
+   *  
    * D. loggea todas las stanzas en el poema dos *en orden* asegurandote
    *    de fallar para cualquier error y logueando un 'done cuando todas
    *    hayan terminado
@@ -136,21 +154,34 @@ function problemD () {
   filenames[randIdx] = 'wrong-file-name-' + (randIdx + 1) + '.txt';
 
   // callback version
-  async.eachSeries(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- D. callback version --');
-        if (err) return eachDone(err);
-        blue(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      if (err) magenta(err);
-      console.log('-- D. callback version done --');
-    }
-  );
+  // async.eachSeries(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- D. callback version --');
+  //       if (err) return eachDone(err);
+  //       blue(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     if (err) magenta(err);
+  //     console.log('-- D. callback version done --');
+  //   }
+  // );
 
   // AsyncAwait version
+  async function readFileAsync(filename) {
+    blue(await promisifiedReadFile(filename))
+  }
+  try {
+
+    for (let i = 0; i < filenames.length; i++) {
+      await readFileAsync(filenames[i]);
+    }
+  } catch (err) {
+    magenta(err);
+  } finally {
+    console.log('done');
+  }
 
 }
